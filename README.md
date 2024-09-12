@@ -17,8 +17,8 @@
 - [❌]  Report File
 
 ## Frontend 
-- If you are familiar with any frontend technology then please Implement Frontend this Application (Any Tech Stack)
+- If you are familiar with any frontend technology then please implement frontend for this Application (Any Tech Stack)
 
-- Take Help of API Docs provided in Swagger URL [Localhost]((http://localhost:8080/swagger-ui/index.html))
+- Take help of API Docs provided in Swagger URL [Localhost](http://localhost:8080/swagger-ui/index.html)
  
 - Contact For Azure Credentials - arjunkadama29@gmail.com
