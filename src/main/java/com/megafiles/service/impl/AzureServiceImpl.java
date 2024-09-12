@@ -6,21 +6,27 @@ import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.sas.BlobSasPermission;
 import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
-import com.megafiles.service.AzureUploadService;
+import com.megafiles.entity.Files;
+import com.megafiles.repository.FilesRepository;
+import com.megafiles.service.AzureService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class AzureUploadServiceImpl implements AzureUploadService {
+public class AzureServiceImpl implements AzureService {
     @Value("${azure.storage.connection-string}")
     private String connectionString;
+
+    private final FilesRepository filesRepository;
 
     // Dynamically get BlobContainerClient based on the provided container name
     private BlobContainerClient getBlobContainerClient(String containerName) {
@@ -57,5 +63,38 @@ public class AzureUploadServiceImpl implements AzureUploadService {
 
         String sasToken = blobClient.generateSas(values);
         return blobClient.getBlobUrl() + "?" + sasToken;
+    }
+
+
+    // Delete file by its ID
+    public void deleteFile(Long fileId,String containerName) {
+        // Retrieve file metadata from database
+        Files file = filesRepository.findById(fileId)
+                .orElseThrow(() -> new RuntimeException("File not found"));
+
+        // Extract file name or path from URL (stored in DB)
+        String fileUrl = file.getFileUrl();
+        String fileName = extractFileNameFromUrl(fileUrl);
+
+        // Delete the file from Azure Blob Storage
+        BlobContainerClient containerClient = getBlobContainerClient(containerName);
+        BlobClient blobClient = containerClient.getBlobClient(fileName);
+        if (blobClient.exists()) {
+            blobClient.delete();
+        }
+
+        // Delete file record from MySQL database
+        filesRepository.delete(file);
+    }
+
+    // Helper method to extract file name from URL
+    private String extractFileNameFromUrl(String fileUrl) {
+        try {
+            URL url = new URL(fileUrl);
+            String path = url.getPath();
+            return path.substring(path.lastIndexOf("/") + 1);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Invalid file URL", e);
+        }
     }
 }

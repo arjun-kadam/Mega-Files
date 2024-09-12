@@ -11,7 +11,8 @@
 ## Features  [✔️] - Implemented | [❌]- Need To Implement
 - [✔️]  Sign Up / Sign In
 - [✔️]  Upload File
-- [❌]  Edit Profile
+- [✔️]  Edit Profile
+- [✔️]  Delete File (User)
 - [❌]  Able To Generate File URL
 - [❌]  Make File Private / Public
 - [❌]  Report File
