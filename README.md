@@ -13,9 +13,12 @@
 - [✔️]  Upload File
 - [✔️]  Edit Profile
 - [✔️]  Delete File (User)
-- [❌]  Able To Generate File URL
-- [❌]  Make File Private / Public
-- [❌]  Report File
+- [✔️]  Able To Generate short URL
+- [✔️]  Make File Private / Public while upload
+- [✔️]  Report File
+- [✔️]  Get Latest Added Files
+- [✔️]  Popular files
+- [❌]  Admin Options
 
 ## Frontend 
 - If you are familiar with any frontend technology then please implement frontend for this Application (Any Tech Stack)

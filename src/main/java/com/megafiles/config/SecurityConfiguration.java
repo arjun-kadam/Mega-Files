@@ -33,6 +33,8 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/admin/**").hasAnyAuthority(Roles.ADMIN.name())
                         .requestMatchers("/api/user/**").hasAnyAuthority(Roles.USER.name())
                         .requestMatchers("/swagger-api.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers("/api/home/**").permitAll()
+                        .requestMatchers("/files/short/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager->manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(

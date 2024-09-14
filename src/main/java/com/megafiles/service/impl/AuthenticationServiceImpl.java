@@ -3,6 +3,7 @@ package com.megafiles.service.impl;
 import com.megafiles.dto.*;
 import com.megafiles.entity.Users;
 import com.megafiles.enums.Roles;
+import com.megafiles.enums.UserStatus;
 import com.megafiles.repository.UsersRepository;
 import com.megafiles.service.AuthenticationService;
 import com.megafiles.service.JWTService;
@@ -13,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 
 @Service
@@ -23,16 +25,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
 
-    public UserDTO signup(SignupRequest signupRequest){
+    public SignupResponse signup(SignupRequest signupRequest){
         Users user=new Users();
         user.setName(signupRequest.getName());
         user.setEmail(signupRequest.getEmail());
         user.setRole(Roles.USER);
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         user.setProfilePictureUrl("https://megashare.blob.core.windows.net/profiles/first-time-pfp.png");
-
+        user.setUserStatus(UserStatus.ACTIVE);
+        user.setRegisterDate(LocalDateTime.now());
+        user.setLastProfileUpdate(LocalDateTime.now().minusDays(8));
         Users savedUser=usersRepository.save(user);
-        return savedUser.getUserDto();
+        return new SignupResponse(
+                savedUser.getId(),
+                savedUser.getName(),
+                savedUser.getEmail(),
+                savedUser.getProfilePictureUrl(),
+                savedUser.getUserStatus().toString(),
+                savedUser.getRole().toString(),
+                savedUser.getRegisterDate(),
+                savedUser.getLastProfileUpdate()
+        );
     }
 
     @Override
@@ -41,7 +54,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
 
-    public JwtAuthResponse signIn(SignInRequest signInRequest){
+    public SignInResponse signIn(SignInRequest signInRequest){
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getEmail(),signInRequest.getPassword()));
 
@@ -53,22 +66,24 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var jwt=jwtService.generateToken(user);
         var refreshToken=jwtService.generateRefreshToken(new HashMap<>(),user);
 
-        JwtAuthResponse jwtAuthResponse=new JwtAuthResponse();
-        jwtAuthResponse.setToken(jwt);
-        jwtAuthResponse.setRefreshToken(refreshToken);
-        jwtAuthResponse.setRoles(user.getRole());
-        return jwtAuthResponse;
+        SignInResponse signInResponse =new SignInResponse();
+        signInResponse.setToken(jwt);
+        signInResponse.setRefreshToken(refreshToken);
+        signInResponse.setRoles(user.getRole());
+        signInResponse.setStatus(user.getUserStatus());
+        return signInResponse;
     }
 
-    public JwtAuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest){
+    public SignInResponse refreshToken(RefreshTokenRequest refreshTokenRequest){
         String email=jwtService.extractUserName(refreshTokenRequest.getToken());
         Users user=usersRepository.findByEmail(email).orElseThrow();
         if (jwtService.isTokenValid(refreshTokenRequest.getToken(),user)){
             var jwt=jwtService.generateToken(user);
-            JwtAuthResponse jwtAuthResponse=new JwtAuthResponse();
-            jwtAuthResponse.setToken(jwt);
-            jwtAuthResponse.setRefreshToken(refreshTokenRequest.getToken());
-            return jwtAuthResponse;
+            SignInResponse signInResponse =new SignInResponse();
+            signInResponse.setToken(jwt);
+            signInResponse.setRefreshToken(refreshTokenRequest.getToken());
+            signInResponse.setStatus(user.getUserStatus());
+            return signInResponse;
         }
         return null;
     }
