@@ -1,5 +1,6 @@
 package com.megafiles.service.impl;
 
+import com.megafiles.dto.FileDTO;
 import com.megafiles.dto.FileUploadResponse;
 import com.megafiles.entity.Files;
 import com.megafiles.entity.Users;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -57,7 +59,7 @@ public class FileServiceImpl implements FileService {
         uploadingFile.setDownloadCount(0);
         uploadingFile.setReportCount(0);
         Files savedFile = filesRepository.save(uploadingFile);
-        String shortUrl = savedFile.getFileStatus().name().equals("PUBLIC") ? savedFile.getShortUrl() : null;
+        String shortUrl = savedFile.getShortUrl();
 
 
         return new FileUploadResponse(
@@ -82,12 +84,57 @@ public class FileServiceImpl implements FileService {
         return "http://localhost:8080/files/short/" + UUID.randomUUID().toString();
     }
 
-    public List<Files> topTenFiles() {
-        return filesRepository.findTop10ByOrderByUploadTimeDesc();
+    public List<FileDTO> topTenFiles() {
+        return filesRepository.findTop10ByOrderByUploadTimeDesc()
+                .stream()
+                .filter(file -> isFilePublic(file.getFileId()))
+                .map(file -> {
+                    FileDTO dto = new FileDTO();
+                    dto.setFileId(file.getFileId());
+                    dto.setFilename(file.getFilename());
+                    dto.setFileSize(file.getFileSize());
+                    dto.setFileUrl(file.getFileUrl());
+                    dto.setShortUrl(file.getShortUrl());
+                    dto.setFileStatus(file.getFileStatus());
+                    dto.setUploadTime(file.getUploadTime());
+                    dto.setDownloadCount(file.getDownloadCount());
+                    dto.setReportCount(file.getReportCount());
+
+                    if (file.getUser() != null) {
+                        dto.setUsername(file.getUser().getName());
+                        dto.setProfilePictureUrl(file.getUser().getProfilePictureUrl());
+                    }
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
-    public List<Files> mostPopularFiles(){
-        return filesRepository.findTop10ByOrderByDownloadCountDesc();
+
+    public List<FileDTO> mostPopularFiles(){
+        return filesRepository.findTop10ByOrderByDownloadCountDesc()
+                .stream()
+                .filter(file -> isFilePublic(file.getFileId()))
+                .map(file -> {
+                    FileDTO dto = new FileDTO();
+                    dto.setFileId(file.getFileId());
+                    dto.setFilename(file.getFilename());
+                    dto.setFileSize(file.getFileSize());
+                    dto.setFileUrl(file.getFileUrl());
+                    dto.setShortUrl(file.getShortUrl());
+                    dto.setFileStatus(file.getFileStatus());
+                    dto.setUploadTime(file.getUploadTime());
+                    dto.setDownloadCount(file.getDownloadCount());
+                    dto.setReportCount(file.getReportCount());
+
+                    if (file.getUser() != null) {
+                        dto.setUsername(file.getUser().getName());
+                        dto.setProfilePictureUrl(file.getUser().getProfilePictureUrl());
+                    }
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     public List<Files> filesByUser(String email){
@@ -124,6 +171,13 @@ public class FileServiceImpl implements FileService {
         }
         return "File Not Found";
     }
+
+    private boolean isFilePublic(Long fileId) {
+        return filesRepository.findById(fileId)
+                .map(file -> file.getFileStatus() == FileStatus.PUBLIC)
+                .orElse(false);
+    }
+
 
 
 

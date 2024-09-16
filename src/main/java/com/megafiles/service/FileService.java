@@ -1,5 +1,6 @@
 package com.megafiles.service;
 
+import com.megafiles.dto.FileDTO;
 import com.megafiles.dto.FileUploadResponse;
 import com.megafiles.entity.Files;
 import com.megafiles.enums.FileStatus;
@@ -13,9 +14,9 @@ import java.util.Optional;
 public interface FileService {
     FileUploadResponse uploadFile(MultipartFile file, FileStatus fileStatus) throws IOException;
     void deleteFile(Long fileId);
-    List<Files> topTenFiles();
+    List<FileDTO> topTenFiles();
     void fileDownload(Long fileId);
-    List<Files> mostPopularFiles();
+    List<FileDTO> mostPopularFiles();
     void reportFile(Long id);
     List<Files> filesByUser(String email);
     String getFileByShortURL(String randomId, HttpServletRequest request);

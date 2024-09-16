@@ -45,7 +45,8 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (IOException e) {
-            return ResponseEntity.status(500).body("An error occurred while uploading the profile picture.");
+            return ResponseEntity.status(500).body("An error occurred : "+e.getMessage());
+
         }
     }
 
@@ -95,8 +96,8 @@ public class UserController {
     }
 
 
-    @PostMapping(name = "/upload" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadFile(@RequestPart("file") MultipartFile file ,@RequestParam("status") FileStatus status) throws IOException {
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file ,@RequestParam("status") FileStatus status) throws IOException {
         try {
             FileUploadResponse uploadedFile=fileService.uploadFile(file,status);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(uploadedFile);

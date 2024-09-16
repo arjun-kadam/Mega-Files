@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/home")
+@CrossOrigin("*")
 public class HomeController {
 
     private final FileService fileService;
@@ -22,12 +23,12 @@ public class HomeController {
 
     @GetMapping("/latest-files")
     public ResponseEntity<?> latestFiles(){
-        return ResponseEntity.status(HttpStatus.FOUND).body(fileService.topTenFiles());
+        return ResponseEntity.status(HttpStatus.OK).body(fileService.topTenFiles());
     }
 
     @GetMapping("/popular-files")
     public ResponseEntity<?> popularFiles(){
-        return ResponseEntity.status(HttpStatus.FOUND).body(fileService.mostPopularFiles());
+        return ResponseEntity.status(HttpStatus.OK).body(fileService.mostPopularFiles());
     }
 
 
@@ -36,7 +37,7 @@ public class HomeController {
 
         try {
             fileService.fileDownload(fileId);
-            return ResponseEntity.status(HttpStatus.OK).body("File Downloaded Success");
+            return ResponseEntity.status(HttpStatus.OK).build();
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File Not Found");
         }
@@ -52,4 +53,5 @@ public class HomeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File Not Found");
         }
     }
+
 }
