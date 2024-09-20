@@ -5,8 +5,16 @@ services:
     plan: free
     dockerfilePath: Dockerfile
     envVars:
-      - key: DB_URL
-        fromEnv: DB_URL
+      - key: DB_HOST
+        fromEnv: DB_HOST
+      - key: DB_PORT
+        fromEnv: DB_PORT
+      - key: DB_NAME
+        fromEnv: DB_NAME
+      - key: DB_USERNAME
+        fromEnv: DB_USERNAME
+      - key: DB_PASSWORD
+        fromEnv: DB_PASSWORD
       - key: AZURE_STORAGE_CONNECTION_STRING
         fromEnv: AZURE_STORAGE_CONNECTION_STRING
     envVarsFile: .env
