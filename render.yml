@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: megafiles-app
+    env: docker
+    plan: free
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: DB_URL
+        fromEnv: DB_URL
+      - key: AZURE_STORAGE_CONNECTION_STRING
+        fromEnv: AZURE_STORAGE_CONNECTION_STRING
+    envVarsFile: .env

@@ -1,10 +1,12 @@
 package com.megafiles.controllers;
 
+import com.megafiles.config.JwtAuthenticationFilter;
 import com.megafiles.dto.FileUploadResponse;
 import com.megafiles.dto.ProfileResponse;
 import com.megafiles.entity.Files;
 import com.megafiles.entity.Users;
 import com.megafiles.enums.FileStatus;
+import com.megafiles.enums.Roles;
 import com.megafiles.repository.UsersRepository;
 import com.megafiles.service.FileService;
 import com.megafiles.service.UserService;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +27,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class UserController {
     private final FileService fileService;
     private final UserService userService;
@@ -109,9 +113,9 @@ public class UserController {
 
     @GetMapping("/all-files")
     public List<Files> getAllFiles() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        return fileService.filesByUser(email);
+        String currentUser = JwtAuthenticationFilter.CURRENT_USER;
+        System.out.println(currentUser);
+        return fileService.filesByUser(currentUser);
     }
 
 

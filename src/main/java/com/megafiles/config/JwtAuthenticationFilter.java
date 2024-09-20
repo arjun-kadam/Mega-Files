@@ -26,13 +26,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JWTService jwtService;
 
     private final UserService userService;
+    public static String CURRENT_USER ="";
 
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
+        System.out.println(authHeader);
         final String jwt;
         final String userEmail;
+
 
         // Check if the Authorization header is present and starts with "Bearer "
         if (StringUtils.isEmpty(authHeader) || !authHeader.startsWith("Bearer ")) {
@@ -45,6 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Extract the username (email) from the JWT
         userEmail = jwtService.extractUserName(jwt);
+        CURRENT_USER=userEmail;
 
         // Ensure userEmail is not empty and there's no authentication set in the security context
         if (!StringUtils.isEmpty(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {

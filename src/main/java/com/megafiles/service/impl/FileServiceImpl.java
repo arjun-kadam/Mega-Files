@@ -81,7 +81,7 @@ public class FileServiceImpl implements FileService {
     }
 
     private String shortURL() {
-        return "http://localhost:8080/files/short/" + UUID.randomUUID().toString();
+        return "https://megafiles-pro.netlify.app/files/short/" + UUID.randomUUID().toString();
     }
 
     public List<FileDTO> topTenFiles() {
