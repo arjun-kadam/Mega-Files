@@ -38,7 +38,7 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # This is required for requesting the JWT
   
     steps:
       - name: Download artifact from build job
@@ -49,9 +49,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B4ED70F1F74742008A582A5E21F6E700 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9D563E919C4E4CFE94E252929862BCAA }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_18B09E2721844CF4B996C5CA3FF09195 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -60,4 +60,9 @@ jobs:
           app-name: 'megashare-spring'
           slot-name: 'Production'
           package: '*.jar'
-          
+
+      # Optional step to restart the web app after deployment, to ensure it runs
+      - name: Restart Azure Web App
+        uses: azure/appservice-actions@v1
+        with:
+          app-name: 'megashare-spring'
