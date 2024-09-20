@@ -23,6 +23,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -33,38 +35,44 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+        // Disable CSRF protection since it's a stateless API
         http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request-> request.requestMatchers("/api/auth/**").permitAll()
+                // Allow specific request patterns
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/admin/**").hasAnyAuthority(Roles.ADMIN.name())
                         .requestMatchers("/api/user/**").hasAnyAuthority(Roles.USER.name())
                         .requestMatchers("/swagger-api.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/api/home/**").permitAll()
                         .requestMatchers("/files/short/**").permitAll()
-                        .anyRequest().authenticated())
-                .sessionManagement(manager->manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider()).addFilterBefore(
-                        jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class
+                        .anyRequest().authenticated()
                 )
-                .cors(cors->corsConfigurationSource());
+                // Ensure stateless session management
+                .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Apply custom JWT filter before the UsernamePasswordAuthenticationFilter
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // Ensure CORS configuration is applied
+                .cors(withDefaults());
 
         return http.build();
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider authenticationProvider=new DaoAuthenticationProvider();
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userService.userDetailsService());
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception{
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
@@ -72,9 +80,9 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("https://megafiles-status.netlify.app","http://localhost:4200","https://megafiles-pro.netlify.app")); // Allow Angular app
+        configuration.setAllowedOrigins(Arrays.asList("https://megafiles-status.netlify.app", "http://localhost:4200", "https://megafiles-pro.netlify.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type","X-Requested-With"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Requested-With"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
 
@@ -83,3 +91,4 @@ public class SecurityConfiguration {
         return source;
     }
 }
+
