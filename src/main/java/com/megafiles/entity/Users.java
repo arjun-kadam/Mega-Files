@@ -21,14 +21,16 @@ import java.util.List;
 @NoArgsConstructor
 public class Users implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Changed from AUTO to IDENTITY
     private Long id;
+
     private String name;
     private String email;
     private String password;
     private Roles role;
+
     // New field to store profile picture URL
-    private String profilePictureUrl="https://megashare.blob.core.windows.net/profiles/first-time-pfp.png";
+    private String profilePictureUrl = "https://megashare.blob.core.windows.net/profiles/first-time-pfp.png";
 
     private UserStatus userStatus;
     private LocalDateTime registerDate;
@@ -64,7 +66,7 @@ public class Users implements UserDetails {
         return true;
     }
 
-    public UserDTO getUserDto(){
+    public UserDTO getUserDto() {
         UserDTO userDto = new UserDTO();
         userDto.setId(id);
         userDto.setName(name);
