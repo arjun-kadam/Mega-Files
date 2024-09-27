@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface FilesRepository extends JpaRepository<Files, Long> {
-    List<Files> findByUserEmail(String email);
+    List<Files> findByUserEmailOrderByUploadTimeDesc(String email);
     List<Files> findTop10ByOrderByUploadTimeDesc();
     List<Files> findTop10ByOrderByDownloadCountDesc();
     Optional<Files> findFilesByShortUrl(String shortUrl);

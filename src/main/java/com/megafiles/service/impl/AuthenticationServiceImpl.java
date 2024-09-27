@@ -71,6 +71,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         signInResponse.setRefreshToken(refreshToken);
         signInResponse.setRoles(user.getRole());
         signInResponse.setStatus(user.getUserStatus());
+        signInResponse.setProfilePictureUrl(user.getProfilePictureUrl());
         return signInResponse;
     }
 
@@ -84,6 +85,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             signInResponse.setRefreshToken(refreshTokenRequest.getToken());
             signInResponse.setStatus(user.getUserStatus());
             return signInResponse;
+
         }
         return null;
     }

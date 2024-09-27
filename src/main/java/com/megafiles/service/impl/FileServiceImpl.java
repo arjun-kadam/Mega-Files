@@ -111,7 +111,7 @@ public class FileServiceImpl implements FileService {
     }
 
 
-    public List<FileDTO> mostPopularFiles(){
+    public List<FileDTO> mostPopularFiles() {
         return filesRepository.findTop10ByOrderByDownloadCountDesc()
                 .stream()
                 .filter(file -> isFilePublic(file.getFileId()))
@@ -137,8 +137,8 @@ public class FileServiceImpl implements FileService {
                 .collect(Collectors.toList());
     }
 
-    public List<Files> filesByUser(String email){
-        return filesRepository.findByUserEmail(email);
+    public List<Files> filesByUser(String email) {
+        return filesRepository.findByUserEmailOrderByUploadTimeDesc(email);
     }
 
 
@@ -151,8 +151,7 @@ public class FileServiceImpl implements FileService {
     }
 
 
-
-    public void reportFile(Long id){
+    public void reportFile(Long id) {
         Optional<Files> file = filesRepository.findById(id);
         file.ifPresent(files -> {
             files.setReportCount(files.getReportCount() + 1);
@@ -160,11 +159,11 @@ public class FileServiceImpl implements FileService {
         });
     }
 
-    public String getFileByShortURL(String randomId, HttpServletRequest request){
+    public String getFileByShortURL(String randomId, HttpServletRequest request) {
         Optional<Files> file = filesRepository.findFilesByShortUrl(request.getRequestURL().toString());
         if (file.isPresent()) {
-            FileStatus status=file.get().getFileStatus();
-            if (status.name().equals("PUBLIC")){
+            FileStatus status = file.get().getFileStatus();
+            if (status.name().equals("PUBLIC")) {
                 return file.get().getFileUrl();
             }
             return "File is Private";
@@ -179,7 +178,38 @@ public class FileServiceImpl implements FileService {
     }
 
 
+    public List<FileDTO> getAllPublicFiles() {
+        return filesRepository.findAll()
+                .stream()
+                .filter(file -> isFilePublic(file.getFileId()))
+                .map(file -> {
+                    FileDTO dto = new FileDTO();
+                    dto.setFileId(file.getFileId());
+                    dto.setFilename(file.getFilename());
+                    dto.setFileSize(file.getFileSize());
+                    dto.setFileUrl(file.getFileUrl());
+                    dto.setShortUrl(file.getShortUrl());
+                    dto.setFileStatus(file.getFileStatus());
+                    dto.setUploadTime(file.getUploadTime());
+                    dto.setDownloadCount(file.getDownloadCount());
+                    dto.setReportCount(file.getReportCount());
+
+                    if (file.getUser() != null) {
+                        dto.setUsername(file.getUser().getName());
+                        dto.setProfilePictureUrl(file.getUser().getProfilePictureUrl());
+                    }
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 
 
+
+    public Files changeFileAccess(FileStatus status,Long fileId){
+        Files file=filesRepository.findById(fileId).orElseThrow(()->new RuntimeException("File Not Found with id"+fileId));
+        file.setFileStatus(status);
+        return filesRepository.save(file);
+    }
 
 }

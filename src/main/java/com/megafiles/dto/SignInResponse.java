@@ -10,4 +10,5 @@ public class SignInResponse {
     private String refreshToken;
     private Roles roles;
     private UserStatus status;
+    private String profilePictureUrl;
 }

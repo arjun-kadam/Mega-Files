@@ -1,7 +1,9 @@
 package com.megafiles.service.impl;
 
+import com.megafiles.entity.Files;
 import com.megafiles.entity.UnblockRequest;
 import com.megafiles.entity.Users;
+import com.megafiles.enums.FileStatus;
 import com.megafiles.enums.RequestStatus;
 import com.megafiles.repository.UnblockRequestRepository;
 import com.megafiles.repository.UsersRepository;

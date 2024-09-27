@@ -20,4 +20,6 @@ public interface FileService {
     void reportFile(Long id);
     List<Files> filesByUser(String email);
     String getFileByShortURL(String randomId, HttpServletRequest request);
+    List<FileDTO> getAllPublicFiles();
+    Files changeFileAccess(FileStatus status,Long fileId);
 }

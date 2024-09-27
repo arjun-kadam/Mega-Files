@@ -119,7 +119,19 @@ public class UserController {
     }
 
 
+    @GetMapping("/public-files")
+    public ResponseEntity<?> getAllPublicFiles(){
+        return ResponseEntity.ok().body(fileService.getAllPublicFiles());
+    }
 
+    @PutMapping("/change-access/{fileId}")
+    public ResponseEntity<?> changeFileAccess(@RequestParam FileStatus status, @PathVariable Long fileId){
+       try{
+           return ResponseEntity.status(HttpStatus.OK).body(fileService.changeFileAccess(status,fileId));
+       }catch (RuntimeException e){
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+       }
+    }
 
 
 }
