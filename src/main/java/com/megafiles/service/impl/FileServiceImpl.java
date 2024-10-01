@@ -18,10 +18,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,22 +36,36 @@ public class FileServiceImpl implements FileService {
     private final UsersRepository usersRepository;
     private final AzureService azureService;
 
+    private static final Long USER_LIMIT= 1024L;
+
     @Value("${azure.storage.user-files-container}")
     private String userFilesContainer;
 
-    // Upload file (for logged-in users)
-    public FileUploadResponse uploadFile(MultipartFile file, FileStatus status) throws IOException {
-        Files uploadingFile = new Files();
+    private Long getUserLimit(String email){
+        long fileSize=0;
+        List<Files> allFiles = filesRepository.findByUserEmailOrderByUploadTimeDesc(email);
+        for (Files file : allFiles) {
+            fileSize+=file.getFileSize();
+        }
+        return fileSize/(1024*1024);
+    }
 
-        // Upload file to Azure Blob Storage and get the file name
-        String fileName = azureService.uploadFile(file, userFilesContainer);
+    public FileUploadResponse uploadFile(MultipartFile file, FileStatus status) throws IOException {
+
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Users user = usersRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        Long currentUserFileSize = getUserLimit(auth.getName());
+        Long newFileSizeInMB = file.getSize() / (1024 * 1024);
+        if (currentUserFileSize+newFileSizeInMB>USER_LIMIT){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Your File Upload Limit Exceeded More Than 1GB !!!");
+        }
 
-        // Save file metadata
-        uploadingFile.setFilename(file.getOriginalFilename());
+        String fileName = azureService.uploadFile(file, userFilesContainer);
+
+        Files uploadingFile = new Files();
+        uploadingFile.setFilename(Objects.requireNonNull(file.getOriginalFilename()).length() > 35 ? file.getOriginalFilename().substring(0, 35) : file.getOriginalFilename());
         uploadingFile.setFileSize(file.getSize());
         uploadingFile.setFileUrl(azureService.getFileUrl(fileName, userFilesContainer));
         uploadingFile.setUser(user);

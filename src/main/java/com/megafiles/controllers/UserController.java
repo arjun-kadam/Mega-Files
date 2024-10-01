@@ -7,6 +7,7 @@ import com.megafiles.entity.Files;
 import com.megafiles.entity.Users;
 import com.megafiles.enums.FileStatus;
 import com.megafiles.enums.Roles;
+import com.megafiles.error.ErrorResponse;
 import com.megafiles.repository.UsersRepository;
 import com.megafiles.service.FileService;
 import com.megafiles.service.UserService;
@@ -105,8 +106,12 @@ public class UserController {
         try {
             FileUploadResponse uploadedFile=fileService.uploadFile(file,status);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(uploadedFile);
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable To Upload File");
+        }catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse( e.getMessage()));
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An internal server error occurred."));
         }
 
     }

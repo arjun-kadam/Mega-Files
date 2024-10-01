@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -28,7 +29,6 @@ public class AzureServiceImpl implements AzureService {
 
     private final FilesRepository filesRepository;
 
-    // Dynamically get BlobContainerClient based on the provided container name
     private BlobContainerClient getBlobContainerClient(String containerName) {
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                 .connectionString(connectionString)
@@ -40,7 +40,7 @@ public class AzureServiceImpl implements AzureService {
     // Upload a file and return the file name or URL
     public String uploadFile(MultipartFile file, String containerName) throws IOException {
         BlobContainerClient containerClient = getBlobContainerClient(containerName);
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        String fileName = UUID.randomUUID() + "_" + (Objects.requireNonNull(file.getOriginalFilename()).length() > 35 ? file.getOriginalFilename().substring(0, 35) : file.getOriginalFilename());
         BlobClient blobClient = containerClient.getBlobClient(fileName);
         blobClient.upload(file.getInputStream(), file.getSize(), true);
 
